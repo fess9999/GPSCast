@@ -1,0 +1,2 @@
+rootProject.name='GPSCast.Server'
+include ':app'
