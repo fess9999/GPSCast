@@ -39,9 +39,11 @@ class ServerThread(locationManager: LocationManager) : Thread() {
                         writer.write((gson.toJson(location) + '\n').toByteArray(Charset.defaultCharset()))
 
                     } while (text != "bye")
-                } catch (e: IllegalStateException) {
+                } catch (exception: Exception) {
                     writer.close()
                 }
+
+                println("Client dropped")
             }.start()
         }
     }

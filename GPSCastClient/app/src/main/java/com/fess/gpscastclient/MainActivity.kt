@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         socketThread = SocketThread(getSystemService(LOCATION_SERVICE) as LocationManager)
-
     }
 
     fun connectButtonClick(view: View)

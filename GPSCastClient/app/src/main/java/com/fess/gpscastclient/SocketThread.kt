@@ -21,9 +21,8 @@ class SocketThread(locationManager: LocationManager) : Thread() {
     override fun run() {
         super.run()
 
-        // setMock(10.0, 53.34, 5f);
-
-        locationManager.addTestProvider (LocationManager.GPS_PROVIDER,
+        locationManager.addTestProvider(
+            LocationManager.GPS_PROVIDER,
             "requiresNetwork" == "",
             "requiresSatellite" == "",
             "requiresCell" == "",
@@ -32,78 +31,58 @@ class SocketThread(locationManager: LocationManager) : Thread() {
             "supportsSpeed" == "",
             "supportsBearing" == "",
             android.location.Criteria.POWER_LOW,
-            android.location.Criteria.ACCURACY_FINE);
+            android.location.Criteria.ACCURACY_FINE
+        );
 
-        /*locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
 
-        locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER,
-            LocationProvider.AVAILABLE,
-            null,System.currentTimeMillis());*/
-        //locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER,
-          //  LocationProvider.AVAILABLE,
-            //null,System.currentTimeMillis());
+        val socket = Socket(address, 8080)
+        println("Connected to $address")
+
+        val reader = Scanner(socket.getInputStream())
+        val writer: OutputStream = socket.getOutputStream()
 
         try {
-            val socket = Socket(address, 8080)
-            println("Connected to $address")
+            while (true) {
+                writer.write("gps\n".toByteArray())
 
+                var serializedLocation = reader.nextLine()
+                println(serializedLocation)
 
-        val reader: Scanner = Scanner(socket.getInputStream())
-        val writer: OutputStream = socket.getOutputStream()
-var counter = 0;
-        while (true) {
-            writer.write("gps\n".toByteArray())
-
-            var serializedLocation = reader.nextLine()
-            println(serializedLocation)
-
-            if (serializedLocation != "null") {
-                var location: Location = gson.fromJson(serializedLocation, Location::class.java)
-//                println(location.latitude)
-
-                setMock(counter.toDouble(), 53.34, 5f);
-
-                counter += 1;
-            }
+                if (serializedLocation != "null") {
+                    var location: Location = gson.fromJson(serializedLocation, Location::class.java)
+                    setMock(location);
+                }
 
                 Thread.sleep(1000)
-        }
-        }
-        catch (ex : Exception)
-        {
+            }
+        } catch (ex: Exception) {
             println(ex.message)
-            //throw ex
         }
     }
 
-    private fun setMock(latitude: Double, longitude: Double, accuracy: Float) {
-        /*locationManager.addTestProvider (LocationManager.GPS_PROVIDER,
-            "requiresNetwork" == "",
-            "requiresSatellite" == "",
-            "requiresCell" == "",
-            "hasMonetaryCost" == "",
-            "supportsAltitude" == "",
-            "supportsSpeed" == "",
-            "supportsBearing" == "",
-            android.location.Criteria.POWER_LOW,
-            android.location.Criteria.ACCURACY_FINE);
-*/
+    private fun setMock(location: Location) {
         var newLocation = Location(LocationManager.GPS_PROVIDER);
 
-        newLocation.latitude = latitude;
-        newLocation.longitude = longitude;
-        newLocation.accuracy = accuracy;
-        newLocation.altitude = 0.0;
-        // newLocation.accuracy = 500.0f;
-        newLocation.time = System.currentTimeMillis();
+        newLocation.latitude = location.latitude;
+        newLocation.longitude = location.longitude;
+        newLocation.accuracy = location.accuracy;
+        newLocation.altitude = location.altitude;
+        newLocation.time = location.time;
+        newLocation.speed = location.speed;
+        newLocation.extras = location.extras;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             newLocation.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos();
         }
+
         locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
 
-        locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER,
+        locationManager.setTestProviderStatus(
+            LocationManager.GPS_PROVIDER,
             LocationProvider.AVAILABLE,
-            null,System.currentTimeMillis());
+            null,
+            System.currentTimeMillis()
+        );
 
         locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, newLocation);
     }
