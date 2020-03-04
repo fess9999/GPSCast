@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Message
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
@@ -20,7 +21,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val serverThread = ServerThread(getSystemService(LOCATION_SERVICE) as LocationManager)
+        var reference = WeakReference<MainActivity>(this);
+        val serverThread =
+            ServerThread(getSystemService(LOCATION_SERVICE) as LocationManager, reference)
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -30,12 +33,10 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            requestPermissions(  arrayOf( Manifest.permission.ACCESS_FINE_LOCATION ), 0);
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0);
         }
 
         serverThread.start()
     }
-
-
-    }
+}
 
