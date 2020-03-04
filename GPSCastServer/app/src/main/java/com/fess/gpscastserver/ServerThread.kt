@@ -2,6 +2,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.location.LocationManager
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import androidx.appcompat.app.AppCompatActivity
 import com.fess.gpscastserver.MainActivity
@@ -17,6 +18,17 @@ import java.net.ServerSocket
 import java.nio.charset.Charset
 import java.util.*
 
+class Wrapper(reference: WeakReference<MainActivity>, message: String) : Runnable {
+    private val reference: WeakReference<MainActivity> = reference;
+    private val text: String = message;
+
+    override fun run() {
+        val activity = reference.get()
+        val logTextView = activity!!.logTextView
+        logTextView.text = "${logTextView.text}\n$text"
+    }
+}
+
 class ServerThread(locationManager: LocationManager, reference: WeakReference<MainActivity>) :
     Thread() {
     private val locationManager: LocationManager = locationManager
@@ -24,9 +36,11 @@ class ServerThread(locationManager: LocationManager, reference: WeakReference<Ma
     private val reference: WeakReference<MainActivity> = reference;
 
     private fun log(message: String) {
-        val activity = reference.get()
-        val logTextView = activity!!.logTextView
-        logTextView.text = "${logTextView.text}\n${message}"
+
+        val mainHandler = Handler(Looper.getMainLooper());
+
+        val myRunnable = Wrapper(reference, message)
+        mainHandler.post(myRunnable)
     }
 
     @SuppressLint("MissingPermission")
