@@ -16,10 +16,9 @@ import java.net.Socket
 import java.util.*
 import kotlin.reflect.typeOf
 
-class Wrapper(reference: WeakReference<MainActivity>, message: String) : Runnable
-{
+class Wrapper(reference: WeakReference<MainActivity>, message: String) : Runnable {
     private val reference: WeakReference<MainActivity> = reference;
-    private val text : String = message;
+    private val text: String = message;
 
     override fun run() {
         val activity = reference.get()
@@ -27,7 +26,10 @@ class Wrapper(reference: WeakReference<MainActivity>, message: String) : Runnabl
         logTextView.text = "${logTextView.text}\n$text"
     }
 }
-class SocketThread(locationManager: LocationManager, reference: WeakReference<MainActivity>) : Thread() {
+
+@Suppress("DEPRECATION")
+class SocketThread(locationManager: LocationManager, reference: WeakReference<MainActivity>) :
+    Thread() {
 
     private val locationManager: LocationManager = locationManager
     private lateinit var address: String
@@ -40,10 +42,6 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
 
         val myRunnable = Wrapper(reference, message)
         mainHandler.post(myRunnable)
-
-        /*val activity = reference.get()
-        val logTextView = activity!!.logTextView
-        logTextView.text = "${logTextView.text}\n${message}"*/
     }
 
     override fun run() {
@@ -51,32 +49,30 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
 
         locationManager.addTestProvider(
             LocationManager.GPS_PROVIDER,
-            "requiresNetwork" == "",
-            "requiresSatellite" == "",
-            "requiresCell" == "",
-            "hasMonetaryCost" == "",
-            "supportsAltitude" == "",
-            "supportsSpeed" == "",
-            "supportsBearing" == "",
+            false,
+            false,
+            false,
+            false,
+            true,
+            true,
+            false,
             android.location.Criteria.POWER_LOW,
             android.location.Criteria.ACCURACY_FINE
         );
 
-        var socket: Socket? = null;
+        var socket: Socket?;
 
         try {
 
             log("Connecting to $address ...")
             socket = Socket(address, 8080)
             log("Connected to $address")
-        }
-        catch (exception: Exception)
-        {
+        } catch (exception: Exception) {
             log("Exception ${exception.message}")
             return;
         }
 
-        val reader = Scanner(socket!!.getInputStream())
+        val reader = Scanner(socket.getInputStream())
         val writer: OutputStream = socket.getOutputStream()
 
         try {
@@ -93,8 +89,7 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
                     log("Location ${location.latitude} ${location.longitude} ${location.speed}")
 
                     setMock(location);
-                }
-                else {
+                } else {
                     log("null location")
                 }
 
@@ -106,33 +101,45 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
     }
 
     private fun setMock(location: Location) {
-        log("1")
         var newLocation = Location(LocationManager.GPS_PROVIDER);
 
         newLocation.latitude = location.latitude;
+        log("1")
+
         newLocation.longitude = location.longitude;
-        //newLocation.accuracy = location.accuracy;
-        //newLocation.altitude = location.altitude;
-        newLocation.time = System.currentTimeMillis();
-        //newLocation.time = location.time;
-        //newLocation.speed = location.speed;
-        //newLocation.extras = location.extras;
         log("2")
+
+        newLocation.accuracy = location.accuracy;
+        log("3")
+
+        newLocation.altitude = location.altitude;
+        log("4")
+
+        //newLocation.time = System.currentTimeMillis();
+        newLocation.time = location.time;
+        log("5")
+
+        newLocation.speed = location.speed;
+        log("6")
+
+        //newLocation.extras = location.extras;
+
+        log("7")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             newLocation.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos();
         }
-        log("3")
+        log("8")
         locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
-        log("4")
+        log("9")
         locationManager.setTestProviderStatus(
             LocationManager.GPS_PROVIDER,
             LocationProvider.AVAILABLE,
-            null,
+            location.extras,
             System.currentTimeMillis()
         );
-        log("5")
+        log("10")
         locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, newLocation);
-        log("6")
+        log("11")
     }
 
     fun setAddress(address: String) {

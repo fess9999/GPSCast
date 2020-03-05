@@ -7,8 +7,8 @@
     tools:context=".MainActivity">
 
     <LinearLayout
-        android:layout_width="409dp"
-        android:layout_height="729dp"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:orientation="vertical"
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="1dp">
@@ -34,9 +34,14 @@
             android:onClick="connectButtonClick"
             android:text="Connect" />
 
-        <TextView
-            android:id="@+id/logTextView"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/logTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
