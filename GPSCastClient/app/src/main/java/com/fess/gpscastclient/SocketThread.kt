@@ -55,7 +55,7 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
             false,
             true,
             true,
-            false,
+            true,
             android.location.Criteria.POWER_LOW,
             android.location.Criteria.ACCURACY_FINE
         );
@@ -75,8 +75,8 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
         val reader = Scanner(socket.getInputStream())
         val writer: OutputStream = socket.getOutputStream()
 
-        try {
-            while (true) {
+        while (true) {
+            try {
                 log("Sending...")
                 writer.write("gps\n".toByteArray())
                 log("Sent")
@@ -92,12 +92,13 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
                 } else {
                     log("null location")
                 }
-
-                sleep(1000)
+            } catch (ex: Exception) {
+                log("Exception ${ex.message}")
             }
-        } catch (ex: Exception) {
-            log("Exception ${ex.message}")
+
+            sleep(1000)
         }
+
     }
 
     private fun setMock(location: Location) {
@@ -122,9 +123,10 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
         newLocation.speed = location.speed;
         log("6")
 
-        //newLocation.extras = location.extras;
+        newLocation.bearing = location.bearing;
 
         log("7")
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             newLocation.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos();
         }
@@ -134,7 +136,7 @@ class SocketThread(locationManager: LocationManager, reference: WeakReference<Ma
         locationManager.setTestProviderStatus(
             LocationManager.GPS_PROVIDER,
             LocationProvider.AVAILABLE,
-            location.extras,
+            null,
             System.currentTimeMillis()
         );
         log("10")

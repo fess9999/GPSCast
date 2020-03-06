@@ -60,9 +60,9 @@ class ServerThread(locationManager: LocationManager, reference: WeakReference<Ma
                 val reader = Scanner(client.getInputStream())
                 val writer: OutputStream = client.getOutputStream()
 
-                var text: String
-                try {
-                    do {
+                var text = ""
+                do {
+                    try {
                         text = reader.nextLine()
                         log("Request: $text")
                         var location =
@@ -71,11 +71,10 @@ class ServerThread(locationManager: LocationManager, reference: WeakReference<Ma
                         log("Location: ${location.latitude} ${location.longitude} ${location.speed}");
                         writer.write((gson.toJson(location) + '\n').toByteArray(Charset.defaultCharset()))
                         log("Sent")
-
-                    } while (text != "bye")
-                } catch (exception: Exception) {
-                    log("Exception: ${exception.message}")
-                }
+                    } catch (exception: Exception) {
+                        log("Exception: ${exception.message}")
+                    }
+                } while (text != "bye")
 
                 log("Client dropped")
             }.start()
