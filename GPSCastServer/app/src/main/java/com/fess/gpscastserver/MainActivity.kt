@@ -22,9 +22,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var reference = WeakReference<MainActivity>(this);
-        val serverThread =
-            ServerThread(getSystemService(LOCATION_SERVICE) as LocationManager, reference)
+//        var reference = WeakReference<MainActivity>(this);
+//        val serverThread =
+//            ServerThread(getSystemService(LOCATION_SERVICE) as LocationManager, reference)
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
             val name: String = className!!.className;
             if (name.endsWith("BackgroundService")) {
                 gpsService = (service as LocationServiceBinder).service
-                gpsService!!.startTracking();
+                gpsService!!.startTracking(WeakReference(this@MainActivity));
                 mTracking = true;
                 //btnStartTracking.setEnabled(true)
                 //txtStatus.setText("GPS Ready")

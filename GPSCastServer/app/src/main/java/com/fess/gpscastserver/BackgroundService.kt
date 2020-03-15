@@ -1,5 +1,6 @@
 package com.fess.gpscastserver
 
+import ServerThread
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -12,6 +13,7 @@ import android.os.Binder
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import java.lang.ref.WeakReference
 
 
 class BackgroundService : Service() {
@@ -24,6 +26,7 @@ class BackgroundService : Service() {
 
         override fun onLocationChanged(location: Location?) {
             mLastLocation = location;
+            server.setLocation(location);
             Log.i(TAG, "LocationChanged: $location");
         }
 
@@ -45,6 +48,7 @@ class BackgroundService : Service() {
         val service: BackgroundService = this@BackgroundService
     }
 
+    private lateinit var server: ServerThread
     private val binder: LocationServiceBinder = LocationServiceBinder()
     private val TAG = "BackgroundService"
     private var mLocationListener: LocationListener? = null
@@ -74,7 +78,7 @@ class BackgroundService : Service() {
             try {
                 mLocationManager!!.removeUpdates(mLocationListener)
             } catch (ex: Exception) {
-                Log.i(TAG, "fail to remove location listners, ignore", ex)
+                Log.i(TAG, "fail to remove location listeners, ignore", ex)
             }
         }
     }
@@ -86,7 +90,8 @@ class BackgroundService : Service() {
         }
     }
 
-    fun startTracking() {
+    fun startTracking(reference: WeakReference<MainActivity>) {
+        server = ServerThread(reference);
         initializeLocationManager()
         mLocationListener = LocationListener(LocationManager.GPS_PROVIDER)
         try {
@@ -96,6 +101,8 @@ class BackgroundService : Service() {
                 LOCATION_DISTANCE.toFloat(),
                 mLocationListener
             )
+
+            server.start();
         } catch (ex: SecurityException) { // Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (ex: IllegalArgumentException) { // Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }

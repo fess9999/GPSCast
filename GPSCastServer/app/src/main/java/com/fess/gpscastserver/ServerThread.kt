@@ -1,18 +1,12 @@
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.location.Location
 import android.location.LocationManager
 import android.os.Handler
 import android.os.Looper
-import android.os.Message
-import androidx.appcompat.app.AppCompatActivity
 import com.fess.gpscastserver.MainActivity
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.io.OutputStream
-import java.io.PrintWriter
 import java.lang.ref.WeakReference
 import java.net.ServerSocket
 import java.nio.charset.Charset
@@ -29,11 +23,12 @@ class Wrapper(reference: WeakReference<MainActivity>, message: String) : Runnabl
     }
 }
 
-class ServerThread(locationManager: LocationManager, reference: WeakReference<MainActivity>) :
+class ServerThread(reference: WeakReference<MainActivity>) :
     Thread() {
-    private val locationManager: LocationManager = locationManager
+
     private val gson = Gson()
     private val reference: WeakReference<MainActivity> = reference;
+    private var knownLocation: Location? = Location(LocationManager.GPS_PROVIDER);
 
     private fun log(message: String) {
 
@@ -41,6 +36,10 @@ class ServerThread(locationManager: LocationManager, reference: WeakReference<Ma
 
         val myRunnable = Wrapper(reference, message)
         mainHandler.post(myRunnable)
+    }
+
+    fun setLocation(location: Location?) {
+        knownLocation = location;
     }
 
     @SuppressLint("MissingPermission")
@@ -64,13 +63,10 @@ class ServerThread(locationManager: LocationManager, reference: WeakReference<Ma
                 do {
                     try {
                         text = reader.nextLine()
-                        log("Request: $text")
-                        var location =
-                            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+//                        var location =
+//                            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
 
-                        log("Location: ${location.latitude} ${location.longitude} ${location.speed}");
-                        writer.write((gson.toJson(location) + '\n').toByteArray(Charset.defaultCharset()))
-                        log("Sent")
+                        writer.write((gson.toJson(knownLocation) + '\n').toByteArray(Charset.defaultCharset()))
                     } catch (exception: Exception) {
                         log("Exception: ${exception.message}")
                     }
